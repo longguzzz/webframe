@@ -1,4 +1,4 @@
-package webframe
+package frame
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type ServeF func(w http.ResponseWriter, r *http.Request)
+type ServeF func(context *Context)
 type Engine struct {
 	router map[string]ServeF
 }
@@ -36,7 +36,8 @@ func (e *Engine) addRoute(method string, pattern string, serveF ServeF) {
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	key := r.Method + "-" + r.URL.Path
 	if serveF, ok := e.router[key]; ok {
-		serveF(w, r)
+		context := NewContext(w, r)
+		serveF(context)
 	} else {
 		_, err := fmt.Fprintf(w, "404 NOT FOUND: %s\n", r.URL)
 		if err != nil {

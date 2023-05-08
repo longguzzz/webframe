@@ -1,4 +1,4 @@
-package webframe
+package frame
 
 import (
 	"log"
