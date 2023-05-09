@@ -9,14 +9,14 @@ import (
 
 func main() {
 	engine := frame.NewEngine()
-	engine.GET("/", func(c *frame.Context) {
+	engine.Router.RigisterGET("/", func(c *frame.Context) {
 		c.RespHtml(http.StatusOK, "<h1>root</h1>\n")
 	})
-	engine.GET("/hello", func(c *frame.Context) {
+	engine.Router.RigisterGET("/hello", func(c *frame.Context) {
 		// /hello?name=test
 		c.RespString(http.StatusOK, "para: %s", c.Query("name"))
 	})
-	engine.POST("/LOGIN", func(c *frame.Context) {
+	engine.Router.RigisterPOST("/LOGIN", func(c *frame.Context) {
 		c.RespJson(http.StatusOK, map[string]any{
 			"username": c.PostForm("username"),
 			"password": c.PostForm("password"),

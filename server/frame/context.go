@@ -53,7 +53,7 @@ func (c *Context) RespString(code int, format string, values ...any) {
 
 // TODO: string与[]byte类型转换的细节
 func (c *Context) RespHtml(code int, html string) {
-	c.SetHeader("Content-Type","text/html")
+	c.SetHeader("Content-Type", "text/html")
 	c.SetStatus(code)
 	c.Writer.Write([]byte(html))
 }
@@ -67,8 +67,7 @@ func (c *Context) RespJson(code int, obj any) {
 	}
 }
 
-func (c *Context) RespData(code int,data []byte) {
+func (c *Context) RespData(code int, data []byte) {
 	c.SetStatus(code)
 	c.Writer.Write(data)
 }
-

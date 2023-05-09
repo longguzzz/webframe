@@ -6,19 +6,11 @@ import (
 
 type ServeFunc func(context *Context)
 type Engine struct {
-	router *router // 用指针
+	*Router // 用指针
 }
 
 func NewEngine() *Engine {
-	return &Engine{router: newRouter()}
-}
-
-func (e *Engine) GET(pattern string, serveF ServeFunc) {
-	e.router.addRoute("GET", pattern, serveF)
-}
-
-func (e *Engine) POST(pattern string, serveF ServeFunc) {
-	e.router.addRoute("POST", pattern, serveF)
+	return &Engine{Router: newRouter(newTrie())}
 }
 
 func (e *Engine) Run(addr string) (err error) {
@@ -27,5 +19,5 @@ func (e *Engine) Run(addr string) (err error) {
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context := NewContext(w, r)
-	e.router.serveAll(context)
+	e.Router.serveWith(context)
 }
