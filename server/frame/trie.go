@@ -1,36 +1,69 @@
 package frame
 
-import "strings"
+import (
+	"strings"
+)
 
 type trie struct {
 	root *trieNode
 }
 
 func newTrie() *trie {
-	return &trie{newTrieNode()}
+	return &trie{root: newTrieNode()}
 }
 
 type trieNode struct {
 	children trieNodeDict
 	services *serviceList // 经常访问的serve其实可以缓存
+	group    *Group
 }
 
 func newTrieNode() *trieNode {
+	servs := make(serviceList, 0)
 	return &trieNode{
 		children: make(trieNodeDict),
-		services: nil,
+		services: &servs,
 	}
 }
 
-func (t trieNode) tagPathNode() {
+func (t *trieNode) selectChild(pathPart string) matcherNode {
+	if next, ok := t.children[pathPart]; ok {
+		return next
+	}
+	return nil
+}
+
+func (t *trieNode) createChild(pathPart string) matcherNode {
+	if next, ok := t.children[pathPart]; ok {
+		return next
+	} else {
+		t.children[pathPart] = newTrieNode()
+		return t.children[pathPart]
+	}
+}
+
+// 只有get的话，在为nil的时候不好通过*Group设值
+func (t *trieNode) getGroup() *Group {
+	return t.group
+}
+func (t *trieNode) setGroup(group *Group) {
+	t.group = group
 }
 
 // slice可能扩容，所以这里应该用指针
 // func (t trieNode) serviceList() *serviceList {
 
 // fix: 两个都应该用指针
-func (t *trieNode) serviceList() *serviceList {
+func (t *trieNode) getServiceList() *serviceList {
 	return t.services
+}
+
+func (t *trieNode) setServiceList(sL *serviceList) {
+	t.services = sL
+}
+
+func (t *trieNode) asMatcher() Matcher {
+	return &trie{t}
 }
 
 type trieNodeDict map[string]*trieNode
@@ -44,13 +77,11 @@ func (tdict *trieNodeDict) getOrCreate(key string) (node matcherNode, exist bool
 	}
 }
 
-/*
-*  输入示例
-*  /
-*  /test
-*  /test/
-*  /test/test
- */
+func (t *trie) node() matcherNode {
+	return t.root
+}
+
+// TODO: findParent
 
 // 解耦router与service
 func (t *trie) addRoute(path string) (Node matcherNode) {
@@ -95,7 +126,7 @@ func (t *trie) deleteRoute(path string) bool {
 	lastSlash := strings.LastIndex(path, "/")
 	var parentNode = t.root
 	// if lastSlash > 0 { // fix: "/"、"/test"、".../test"的区别
-	// 如果没有后继路径，则完全删除，还需要考虑更新Parent上的信息
+	// 如果没有后继路径，则完全删除，还需要考虑更新Parent上的信息f
 	// 有后续路径则只是serve置为nil
 	lastPathPart := path[lastSlash+1:]
 	parentNode = t.findRoute(path[:lastSlash]).(*trieNode)

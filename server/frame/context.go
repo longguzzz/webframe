@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-// 使用Context进行更细粒度的控制，同时维护Writer的信息，比如Header
-type Context struct {
+// 使用RequestContext进行更细粒度的控制，同时维护Writer的信息，比如Header
+type RequestContext struct {
 	Writer  http.ResponseWriter // 接口
 	Request *http.Request       // 指向结构体
 
@@ -17,8 +17,8 @@ type Context struct {
 }
 
 // TODO: 返回指针的理由
-func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
-	return &Context{
+func NewContext(writer http.ResponseWriter, req *http.Request) *RequestContext {
+	return &RequestContext{
 		Writer:     writer,
 		Request:    req,
 		Path:       req.URL.Path,
@@ -27,38 +27,38 @@ func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
 	}
 }
 
-func (c *Context) PostForm(key string) string {
+func (c *RequestContext) PostForm(key string) string {
 	return c.Request.FormValue(key)
 }
 
-func (c *Context) Query(key string) string {
+func (c *RequestContext) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
 
-func (c *Context) SetStatus(code int) {
+func (c *RequestContext) SetStatus(code int) {
 	c.StatusCode = code
 	c.Writer.WriteHeader(code)
 }
 
-func (c *Context) SetHeader(key string, value string) {
+func (c *RequestContext) SetHeader(key string, value string) {
 	c.Writer.Header().Set(key, value)
 }
 
 // 数据封装
-func (c *Context) RespString(code int, format string, values ...any) {
+func (c *RequestContext) RespString(code int, format string, values ...any) {
 	c.SetHeader("Content-Type", "text/plain")
 	c.SetStatus(code)
 	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
 
 // TODO: string与[]byte类型转换的细节
-func (c *Context) RespHtml(code int, html string) {
+func (c *RequestContext) RespHtml(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.SetStatus(code)
 	c.Writer.Write([]byte(html))
 }
 
-func (c *Context) RespJson(code int, obj any) {
+func (c *RequestContext) RespJson(code int, obj any) {
 	c.SetHeader("Content-Type", "application/json")
 	c.SetStatus(code)
 	encoder := json.NewEncoder(c.Writer)
@@ -67,7 +67,7 @@ func (c *Context) RespJson(code int, obj any) {
 	}
 }
 
-func (c *Context) RespData(code int, data []byte) {
+func (c *RequestContext) RespData(code int, data []byte) {
 	c.SetStatus(code)
 	c.Writer.Write(data)
 }

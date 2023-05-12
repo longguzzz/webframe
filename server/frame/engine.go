@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-type ServeFunc func(context *Context)
+type ServeFunc func(context *RequestContext)
 type Engine struct {
 	*Router // 用指针
 }

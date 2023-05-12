@@ -47,8 +47,8 @@ func Test_Trie(t *testing.T) {
 	assert.Equal(t, trie.findRoute("/test"), (matched1))     // 函数间可以赋值，但是不可以直接比较
 	assert.Equal(t, trie.findRoute("/test/t"), (matched2))
 	// assert.Equal(t, trie.findRoute("/"), (nil)) // 注意root的特殊性
-	
-	assert.Equal(t, trie.findRoute("/").serviceList(), (*serviceList)(nil))
+
+	assert.Equal(t, trie.findRoute("/").getServiceList(), (*serviceList)(nil))
 	assert.Equal(t, trie.findRoute("/t"), (matched4))
 	assert.Equal(t, trie.findRoute("/test/"), (*trieNode)(nil))
 
